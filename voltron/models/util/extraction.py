@@ -48,12 +48,14 @@ class MAPAttention(nn.Module):
         return self.proj(vals)
 
 
+
 class MAPBlock(nn.Module):
     def __init__(
         self,
         n_latents: int,
         embed_dim: int,
         n_heads: int,
+        output_dim: None,
         mlp_ratio: float = 4.0,
         do_rms_norm: bool = True,
         do_swish_glu: bool = True,
@@ -62,6 +64,7 @@ class MAPBlock(nn.Module):
         super().__init__()
         self.n_latents, self.embed_dim, self.n_heads = n_latents, embed_dim, 2 * n_heads
 
+        self.embed_dim = output_dim
         # Projection Operator
         self.projection = nn.Linear(embed_dim, self.embed_dim)
 
@@ -72,7 +75,8 @@ class MAPBlock(nn.Module):
         # Custom MAP Attention (seed, encoder outputs) -> seed
         self.attn_norm = RMSNorm(self.embed_dim) if do_rms_norm else nn.LayerNorm(self.embed_dim, eps=1e-6)
         self.attn = MAPAttention(self.embed_dim, n_heads=self.n_heads)
-
+        if output_dim is None:
+            output_dim = self.embed_dim
         # Position-wise Feed-Forward Components
         self.mlp_norm = RMSNorm(self.embed_dim) if do_rms_norm else nn.LayerNorm(self.embed_dim, eps=1e-6)
         self.mlp = nn.Sequential(
@@ -93,8 +97,12 @@ class MAPBlock(nn.Module):
 
 
 # MAP Extractor Instantiation --> factory for creating extractors with the given parameters.
-def instantiate_extractor(backbone: nn.Module, n_latents: int = 1) -> Callable[[], nn.Module]:
+def instantiate_extractor(backbone: nn.Module, n_latents: int = 1, output_dim=384, n_heads=None) -> Callable[[], nn.Module]:
     def initialize() -> nn.Module:
-        return MAPBlock(n_latents, backbone.embed_dim, backbone.n_heads)
+        if n_heads is None:
+            return MAPBlock(n_latents, backbone.embed_dim, backbone.n_heads, output_dim=output_dim)
+        else:
+            return MAPBlock(n_latents, backbone.embed_dim, n_heads, output_dim=output_dim)
+        # return MAPBlock(n_latents, backbone.embed_dim, backbone.n_heads, output_dim=output_dim)
 
     return initialize
