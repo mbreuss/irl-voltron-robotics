@@ -35,15 +35,15 @@ Torchvision 0.13.0, and Torchaudio 0.12.0. **Note**: Releases 1.1.0 and after *a
 Once PyTorch has been properly installed, you can install this package via PyPI, and you're off!
 
 ```bash
-pip install voltron-robotics
+pip install irl-voltron-robotics
 ```
 
 You can also install this package locally via an editable installation in case you want to run examples/extend the
 current functionality:
 
 ```bash
-git clone https://github.com/siddk/voltron-robotics
-cd voltron-robotics
+git clone https://github.com/mbreuss/irl-voltron-robotics
+cd irl-voltron-robotics
 pip install -e .
 ```
 
@@ -54,7 +54,7 @@ reproductions), to facilitate use for various downstream tasks. Using a pretrain
 
 ```python
 from torchvision.io import read_image
-from voltron import instantiate_extractor, load
+from irl-voltron import instantiate_extractor, load
 
 # Load a frozen Voltron (V-Cond) model & configure a vector extractor
 vcond, preprocess = load("v-cond", device="cuda", freeze=True)
